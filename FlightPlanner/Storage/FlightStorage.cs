@@ -48,6 +48,11 @@ namespace FlightPlanner.Storage
             }
         }
 
+        public static PageResult SearchFlights(SearchFlightRequest request)
+        {
+            return new PageResult(_flights);
+        }
+
         public static Flight GetFlight(int id)
         {
             lock (_lock)

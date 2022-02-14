@@ -6,9 +6,11 @@
         public int TotalItems { get; set; }
         public List<Flight> Items { get; set; }
 
-        public PageResult()
+        public PageResult(List<Flight> input)
         {
-            Items = new List<Flight>();
+            Page = 0;
+            TotalItems = input.Count;
+            Items = input;
         }
     }
 }

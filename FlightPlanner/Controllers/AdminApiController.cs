@@ -10,6 +10,7 @@ namespace FlightPlanner.Controllers
     [Authorize]
     public class AdminApiController : ControllerBase
     {
+
         [HttpGet]
         [Route("Flights/{id}")]
         public IActionResult GetFlights(int id)
@@ -31,8 +32,9 @@ namespace FlightPlanner.Controllers
             return Ok();
         }
 
-        [HttpPut, Authorize]
+        [HttpPut]
         [Route("flights")]
+        [Authorize]
         public IActionResult PutFlights(AddFlightRequest request)
         {
             if (!FlightStorage.IsValid(request))
