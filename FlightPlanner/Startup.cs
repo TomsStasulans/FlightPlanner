@@ -1,4 +1,6 @@
 ﻿using FlightPlanner.Handlers;
+using FlightPlanner.Models;
+using FlightPlanner.Storage;
 using Microsoft.AspNetCore.Authentication;
 
 namespace FlightPlanner
@@ -19,6 +21,8 @@ namespace FlightPlanner
             builder.Services.AddControllers();
             builder.Services.AddAuthentication("BasicAuthentication")
                 .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
+
+            builder.Services.AddDbContext<FlightPlannerDbContext>(ServiceLifetime.Scoped);
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();

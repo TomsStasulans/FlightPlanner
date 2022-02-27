@@ -2,6 +2,7 @@
 using FlightPlanner.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace FlightPlanner.Controllers
 {
@@ -10,12 +11,21 @@ namespace FlightPlanner.Controllers
     [Authorize]
     public class AdminApiController : ControllerBase
     {
+        private readonly FlightPlannerDbContext _context;
+
+        public AdminApiController(FlightPlannerDbContext context)
+        {
+            _context = context;
+        }
 
         [HttpGet]
-        [Route("Flights/{id}")]
+        [Route("flights/{id}")]
         public IActionResult GetFlights(int id)
         {
-            var flight = FlightStorage.GetFlight(id);
+            var flight = _context.Flights
+                .Include(f => f.From)
+                .Include(f => f.To)
+                .SingleOrDefault();
             if (flight == null)
             {
                 return NotFound();
@@ -28,7 +38,16 @@ namespace FlightPlanner.Controllers
         [Route("Flights/{id}")]
         public IActionResult DeleteFlights(int id)
         {
-            FlightStorage.DeleteFlight(id);
+            var flight = _context.Flights
+                .Include(f => f.From)
+                .Include(f => f.To)
+                .SingleOrDefault(f => f.Id == id);
+            if (flight != null)
+            {
+                _context.Flights.Remove(flight);
+                _context.SaveChanges();
+            }
+
             return Ok();
         }
 
@@ -42,12 +61,25 @@ namespace FlightPlanner.Controllers
                 return BadRequest();
             }
 
-            if (FlightStorage.Exists(request))
+            if (Exists(request))
             {
                 return Conflict();
             }
 
+            var flight = FlightStorage.ConvertToFlight(request);
+            _context.Flights.Add(flight);
+            _context.SaveChanges();
             return Created("", FlightStorage.AddFlight(request));
+        }
+
+        private bool Exists(AddFlightRequest request)
+        {
+            return _context.Flights.Any(flight =>
+                flight.Carrier.ToLower().Trim() == request.Carrier.ToLower().Trim() &&
+                flight.DepartureTime == request.DepartureTime &&
+                flight.ArrivalTime == request.ArrivalTime &&
+                flight.To.AirportName.ToLower().Trim() == request.To.AirportName.ToLower().Trim() &&
+                flight.From.AirportName.ToLower().Trim() == request.From.AirportName.ToLower().Trim());
         }
     }
 }
