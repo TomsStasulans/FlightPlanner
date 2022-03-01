@@ -11,6 +11,7 @@ namespace FlightPlanner.Controllers
     [Authorize]
     public class AdminApiController : ControllerBase
     {
+        private static readonly object _lock = new();
         private readonly FlightPlannerDbContext _context;
 
         public AdminApiController(FlightPlannerDbContext context)
@@ -22,33 +23,39 @@ namespace FlightPlanner.Controllers
         [Route("flights/{id}")]
         public IActionResult GetFlights(int id)
         {
-            var flight = _context.Flights
-                .Include(f => f.From)
-                .Include(f => f.To)
-                .SingleOrDefault();
-            if (flight == null)
+            lock (_lock)
             {
-                return NotFound();
-            }
+                var flight = _context.Flights
+                    .Include(f => f.From)
+                    .Include(f => f.To)
+                    .SingleOrDefault(f => f.Id == id);
+                if (flight == null)
+                {
+                    return NotFound();
+                }
 
-            return Ok(flight);
+                return Ok(flight);
+            }
         }
 
         [HttpDelete]
         [Route("Flights/{id}")]
         public IActionResult DeleteFlights(int id)
         {
-            var flight = _context.Flights
-                .Include(f => f.From)
-                .Include(f => f.To)
-                .SingleOrDefault(f => f.Id == id);
-            if (flight != null)
+            lock (_lock)
             {
-                _context.Flights.Remove(flight);
-                _context.SaveChanges();
-            }
+                var flight = _context.Flights
+                    .Include(f => f.From)
+                    .Include(f => f.To)
+                    .SingleOrDefault(f => f.Id == id);
+                if (flight != null)
+                {
+                    _context.Flights.Remove(flight);
+                    _context.SaveChanges();
+                }
 
-            return Ok();
+                return Ok();
+            }
         }
 
         [HttpPut]
@@ -56,25 +63,31 @@ namespace FlightPlanner.Controllers
         [Authorize]
         public IActionResult PutFlights(AddFlightRequest request)
         {
-            if (!FlightStorage.IsValid(request))
+            lock (_lock)
             {
-                return BadRequest();
-            }
+                if (!FlightStorage.IsValid(request))
+                {
+                    return BadRequest();
+                }
 
-            if (Exists(request))
-            {
-                return Conflict();
-            }
+                if (Exists(request))
+                {
+                    return Conflict();
+                }
 
-            var flight = FlightStorage.ConvertToFlight(request);
-            _context.Flights.Add(flight);
-            _context.SaveChanges();
-            return Created("", FlightStorage.AddFlight(request));
+                var flight = FlightStorage.ConvertToFlight(request);
+                _context.Flights.Add(flight);
+                _context.SaveChanges();
+                return Created("", flight);
+            }
         }
 
         private bool Exists(AddFlightRequest request)
         {
-            return _context.Flights.Any(flight =>
+            return _context.Flights
+                .Include(f => f.To)
+                .Include(f => f.From)
+                .Any(flight =>
                 flight.Carrier.ToLower().Trim() == request.Carrier.ToLower().Trim() &&
                 flight.DepartureTime == request.DepartureTime &&
                 flight.ArrivalTime == request.ArrivalTime &&
