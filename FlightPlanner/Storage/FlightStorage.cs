@@ -1,5 +1,4 @@
-﻿using FlightPlanner.Controllers;
-using FlightPlanner.Models;
+﻿using FlightPlanner.Models;
 
 namespace FlightPlanner.Storage
 {
@@ -19,7 +18,6 @@ namespace FlightPlanner.Storage
                     DepartureTime = request.DepartureTime,
                     Carrier = request.Carrier,
                 };
-
                 return currentFlight;
             }
         }
@@ -94,7 +92,6 @@ namespace FlightPlanner.Storage
                     f.From.AirportName.ToLower().Trim() == request.From.ToLower().Trim() &&
                     f.To.AirportName.ToLower().Trim() == request.To.ToLower().Trim() &&
                     f.DepartureTime.Substring(0, 10) == request.DepartureDate).ToList();
-
 
                 return new PageResult(search);
             }
