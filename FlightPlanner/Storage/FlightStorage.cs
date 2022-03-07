@@ -1,4 +1,5 @@
-﻿using FlightPlanner.Models;
+﻿using FlightPlanner.Data;
+using FlightPlanner.Models;
 
 namespace FlightPlanner.Storage
 {
@@ -22,7 +23,7 @@ namespace FlightPlanner.Storage
             }
         }
 
-        public static List<Airport> SearchAirports(string search, FlightPlannerDbContext context)
+        public static List<Airport> SearchAirports(string search, IFlightPlannerDbContext context)
         {
             lock (_lock)
             {
@@ -84,7 +85,7 @@ namespace FlightPlanner.Storage
             }
         }
 
-        public static PageResult SearchFlight(SearchFlightRequest request, FlightPlannerDbContext context)
+        public static PageResult SearchFlight(SearchFlightRequest request, IFlightPlannerDbContext context)
         {
             lock (_lock)
             {

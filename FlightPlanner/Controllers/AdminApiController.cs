@@ -1,4 +1,5 @@
-﻿using FlightPlanner.Models;
+﻿using FlightPlanner.Data;
+using FlightPlanner.Models;
 using FlightPlanner.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,9 +13,9 @@ namespace FlightPlanner.Controllers
     public class AdminApiController : ControllerBase
     {
         private static readonly object _lock = new();
-        private readonly FlightPlannerDbContext _context;
+        private readonly IFlightPlannerDbContext _context;
 
-        public AdminApiController(FlightPlannerDbContext context)
+        public AdminApiController(IFlightPlannerDbContext context)
         {
             _context = context;
         }

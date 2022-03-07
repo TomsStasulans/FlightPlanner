@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FlightPlanner.Core.Interfaces
+﻿namespace FlightPlanner.Core.Interfaces
 {
-    internal interface IEntity
+    public interface IEntity
     {
+        int Id { get; set; }
     }
 }
